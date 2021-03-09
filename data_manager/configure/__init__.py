@@ -42,7 +42,7 @@ def configure(
 
     """
 
-    dm_config = ConfigParser()
+    dm_config = ConfigParser(allow_no_value=True)
     # storing service config
     dm_config.add_section("service")
     dm_config["service"] = {"service": service, "name": storage_name}
@@ -56,6 +56,10 @@ def configure(
         "registery": str(CONFIG_DIR / "registery.json"),
         "allocated_space": allocated_space,
     }
+
+    CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+    with (CONFIG_DIR / "config").open("w") as fw:
+        dm_config.write(fw)
 
     if service_settings is not None:
         configure_service(service=service, settings=service_settings)
