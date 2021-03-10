@@ -3,19 +3,16 @@ import joblib
 import hashlib
 from pathlib import Path
 from os.path import getsize
-from configparser import ConfigParser
 
-from data_manager.configure import CONFIG_DIR
-from data_manger.services.base import Provider, Progress
-
-CONFIG = ConfigParser()
-CONFIG.read(CONFIG_DIR / "config")
+from data_manager import CONFIG
+from data_manager.services import Provider, Progress
 
 
 class AWSProvider(Provider):
-    bucket = CONFIG["service"]["name"]
-    data_folder = Path(CONFIG["local"]["data_dir"])
-    s3 = boto3.resource("s3")
+    def __init__(self):
+        self.bucket = CONFIG["service"]["name"]
+        self.data_folder = Path(CONFIG["local"]["data_dir"])
+        self.s3 = boto3.resource("s3")
 
     @classmethod
     def download(self, file_name):

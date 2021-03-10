@@ -52,7 +52,7 @@ def configure(
         local_dir = str((CONFIG_DIR / "data").resolve())
 
     dm_config["local"] = {
-        "data_dir": local_dir,
+        "data_dir": str(Path(local_dir).resolve()),
         "registery": str(CONFIG_DIR / "registery.json"),
         "allocated_space": allocated_space,
     }
