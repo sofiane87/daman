@@ -24,5 +24,9 @@ def delete_data(name):
     pass
 
 
-def clean(space=None):
+def list_data(local_only=False):
+    pass
+
+
+def clear(space=None):
     pass

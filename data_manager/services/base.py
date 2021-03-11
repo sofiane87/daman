@@ -4,11 +4,11 @@ from tqdm import tqdm
 
 class Provider:
     @abstractclassmethod
-    def download(self, file_name):
+    def download(self, key):
         raise NotImplementedError
 
     @abstractclassmethod
-    def upload(self, file_name, obj):
+    def upload(self, key, file_path):
         raise NotImplementedError
 
     @abstractclassmethod
@@ -16,11 +16,11 @@ class Provider:
         raise NotImplementedError
 
     @abstractclassmethod
-    def check_valid(self, file_name):
+    def check_valid(self, key, file_path):
         raise NotImplementedError
 
     @abstractclassmethod
-    def file_size(self, file_name):
+    def file_size(self, key):
         raise NotImplementedError
 
     @property
@@ -29,8 +29,8 @@ class Provider:
 
 
 class Progress:
-    def __init__(self, size, file_name):
-        self.progress_bar = tqdm(desc=f"Downloading {file_name}", total=size)
+    def __init__(self, size, key):
+        self.progress_bar = tqdm(desc=f"Downloading {key}", total=size)
 
     def __call__(self, bytes):
         self.progress_bar.update(bytes)
