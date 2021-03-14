@@ -1,5 +1,6 @@
 import boto3
 from pathlib import Path
+from warnings import warn
 from os.path import getsize
 from typing import Union, IO, AnyStr
 
@@ -55,6 +56,9 @@ class AWSProvider(Provider):
         # close progres bar
         del pbar
 
+    def delete(self, key: str):
+        self.s3.meta.client.delete_object(Bucket=self.bucket, Key=key)
+
     @property
     def keys(self):
         return [file.key for file in self.s3.Bucket(self.bucket).objects.all()]
@@ -69,6 +73,9 @@ class AWSProvider(Provider):
         local_md5 = self.md5(file_path=file_path)
         # get remote etag
         msg = f"{key} is not available on `{self.bucket}` S3 bucket."
-        assert key in self.keys, msg
-        remote_md5 = self.s3.Bucket(self.bucket).Object(key).metadata["md5"]
-        return local_md5 == remote_md5
+        if key in self.keys:
+            remote_md5 = self.s3.Bucket(self.bucket).Object(key).metadata["md5"]
+            return local_md5 == remote_md5
+        else:
+            warn(f"key `{key}` is not available on `{self.bucket}` S3 bucket.")
+            return True

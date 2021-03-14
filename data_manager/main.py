@@ -103,12 +103,16 @@ def push(
     }
 
 
-def delete(key: str):
-    item = REGISTERY[key]
-    # delete file
-    del REGISTERY[key]
-    # delete local file
-    os.remove(item["path"])
+def delete(key: str, local: bool = True, remote: bool = False):
+    if local:
+        item = REGISTERY[key]
+        # delete file
+        del REGISTERY[key]
+        # delete local file
+        os.remove(item["path"])
+    if remote:
+        # delete remote file
+        SERVICE.delete(key=key)
 
 
 def list_data(local_only: bool = False):
@@ -117,8 +121,11 @@ def list_data(local_only: bool = False):
             "key": key,
             "local": key in REGISTERY,
             "size": SERVICE.file_size(key) // 2 ** 20,
+            "remote": key in SERVICE.keys,
         }
-        for key in (REGISTERY.keys if local_only else SERVICE.keys)
+        for key in (
+            REGISTERY.keys if local_only else set(SERVICE.keys) | set(REGISTERY.keys)
+        )
     ]
 
 

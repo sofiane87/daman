@@ -30,6 +30,10 @@ class Provider:
     def file_size(self, key: str):
         raise NotImplementedError
 
+    @abstractmethod
+    def delete(self, key: str):
+        raise NotImplementedError
+
     def md5(self, file_path: Union[str, Path] = None, buffer: IO[AnyStr] = None):
         md5_hash = hashlib.md5()
 
