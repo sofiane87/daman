@@ -5,7 +5,6 @@ from data_manager.services.aws import AWSProvider
 PROVIDERS = {"aws": AWSProvider}
 
 
-@property
 def current_service():
     req_service = CONFIG["service"]["service"]
     if req_service in PROVIDERS:

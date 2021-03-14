@@ -30,10 +30,6 @@ class Provider:
     def file_size(self, key: str):
         raise NotImplementedError
 
-    @property
-    def files(self):
-        return self.list_files()
-
     def md5(self, file_path: Union[str, Path] = None, buffer: IO[AnyStr] = None):
         md5_hash = hashlib.md5()
 

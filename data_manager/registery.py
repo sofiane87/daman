@@ -1,4 +1,4 @@
-import json
+import orjson
 
 from data_manager import CONFIG_DIR
 
@@ -9,13 +9,13 @@ class DataRegistery:
 
     def read(self):
         if self.registery_path.exists():
-            with self.registery_path.open("r") as fr:
-                return json.load(fr)
+            with self.registery_path.open("rb") as fr:
+                return orjson.loads(fr.read())
         return {}
 
     def write(self, registery):
-        with self.registery_path.open("w") as fw:
-            json.dump(obj=registery, fp=fw)
+        with self.registery_path.open("wb") as fw:
+            fw.write(orjson.dumps(registery))
 
     def __getitem__(self, key):
         registery = self.read()
@@ -28,7 +28,7 @@ class DataRegistery:
         registery[key] = value
         self.write(registery)
 
-    def __delitem__(self, key, value):
+    def __delitem__(self, key):
         registery = self.read()
 
         del registery[key]

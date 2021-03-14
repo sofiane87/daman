@@ -1,9 +1,9 @@
+import os
 import joblib
 import psutil
 from io import BytesIO
 from pathlib import Path
 from warnings import warn
-from shutil import rmtree
 from os.path import getsize
 from datetime import datetime
 from logging import getLogger
@@ -15,18 +15,26 @@ from data_manager.services import current_service
 logger = getLogger(__name__)
 
 REGISTERY = DataRegistery()
+SERVICE = current_service()
+
+DATA_FOLDER.mkdir(parents=True, exist_ok=True)
 
 
-def pull(key, force_download=False, persist=None, memory_only=False):
+def pull(
+    key: str,
+    force_download: bool = False,
+    persist: bool = None,
+    memory_only: bool = False,
+):
     msg = f"key '{key}' not found"
-    assert key in current_service.keys, msg
+    assert key in SERVICE.keys, msg
     if key in REGISTERY:
         if persist is not None:
             REGISTERY[key]["persist"] = persist
         REGISTERY[key]["used"] += 1
         REGISTERY[key]["last_used"] = datetime.now()
         file_path = Path(REGISTERY[key]["path"])
-        is_valid = current_service.check_valid(key=None, file_path=file_path)
+        is_valid = SERVICE.check_valid(key=key, file_path=file_path)
         if is_valid:
             obj = joblib.load(file_path)
             return obj["data"], obj["meta"]
@@ -41,13 +49,13 @@ def pull(key, force_download=False, persist=None, memory_only=False):
 
     if memory_only:
         buffer = BytesIO()
-        current_service.download(key=key, buffer=buffer)
+        SERVICE.download(key=key, buffer=buffer)
         obj = joblib.load(buffer)
         return obj["data"], obj["meta"]
     else:
         clear_disc(key=key)
         file_path = (Path(DATA_FOLDER) / key).resolve()
-        current_service.download(key=key, file_path=file_path)
+        SERVICE.download(key=key, file_path=file_path)
         REGISTERY[key] = {
             "path": str(file_path),
             "used": 1,
@@ -60,9 +68,15 @@ def pull(key, force_download=False, persist=None, memory_only=False):
         return obj["data"], obj["meta"]
 
 
-def push(obj, key, meta=None, force=False, persist=False):
+def push(
+    obj: object,
+    key: str,
+    meta: object = None,
+    force: bool = False,
+    persist: bool = False,
+):
     obj = {"data": obj, "meta": meta}
-    if key in current_service.keys:
+    if key in SERVICE.keys:
         if force:
             warn(f"`{key}` already in use and will be over-written.")
         else:
@@ -76,7 +90,7 @@ def push(obj, key, meta=None, force=False, persist=False):
     joblib.dump(obj, file_path)
 
     # upload to cloud
-    current_service.upload(key=key, file_path=file_path)
+    SERVICE.upload(key=key, file_path=file_path)
 
     # update registery
     REGISTERY[key] = {
@@ -89,41 +103,44 @@ def push(obj, key, meta=None, force=False, persist=False):
     }
 
 
-def delete(key):
+def delete(key: str):
     item = REGISTERY[key]
     # delete file
     del REGISTERY[key]
     # delete local file
-    rmtree(item["path"])
+    os.remove(item["path"])
 
 
-def list_data(local_only=False):
+def list_data(local_only: bool = False):
     return [
-        {"key": key, "local": key in REGISTERY, "size": current_service.file_size(key)}
-        for key in (REGISTERY.keys if local_only else current_service.keys)
+        {
+            "key": key,
+            "local": key in REGISTERY,
+            "size": SERVICE.file_size(key) // 2 ** 20,
+        }
+        for key in (REGISTERY.keys if local_only else SERVICE.keys)
     ]
 
 
-@property
 def available_disc():
     if CONFIG["local"]["allocated_space"] is None:
         free_space = (
             psutil.disk_usage(DATA_FOLDER).free() // 2 ** 20
         )  # disc space in megabytes
     else:
-        free_space = CONFIG["local"]["allocated_space"] - dir_size(DATA_FOLDER)
+        free_space = int(CONFIG["local"]["allocated_space"]) - dir_size(DATA_FOLDER)
     return free_space
 
 
 def clear_disc(key: str = None, space: int = None, ignore_persist: bool = False):
     if key is not None:
-        file_size = current_service.file_size(key=key) // 2 ** 20
+        file_size = SERVICE.file_size(key=key) // 2 ** 20
     else:
         file_size = space
 
-    while available_disc < file_size:
+    while available_disc() < file_size:
         items = sorted(
-            DataRegistery.items,
+            REGISTERY.items,
             key=lambda x: (x[1]["persist"], x[1]["last_used"], x[1]["used"]),
         )
 
@@ -134,5 +151,5 @@ def clear_disc(key: str = None, space: int = None, ignore_persist: bool = False)
                 continue
 
         raise IOError(
-            f"Not enough space available. Only {available_disc} MB available but {file_size} MB required. No additional file can be deleted."
+            f"Not enough space available. Only {available_disc()} MB available but {file_size} MB required. No additional file can be deleted."
         )

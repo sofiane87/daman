@@ -17,7 +17,7 @@ class AWSProvider(Provider):
     ):
         # Checking file exists
         msg = f"{key} does not exist in `{self.bucket}` S3 bucket."
-        assert key in self.files, msg
+        assert key in self.keys, msg
 
         # Initialising progress bar
         pbar = Progress(size=self.file_size(key), key=key)
@@ -25,7 +25,7 @@ class AWSProvider(Provider):
         # Download
         if file_path is not None:
             self.s3.meta.client.download_file(
-                Bucket=self.bucket, Key=key, FileName=file_path, Callback=pbar,
+                Bucket=self.bucket, Key=key, Filename=str(file_path), Callback=pbar,
             )
         elif buffer is not None:
             self.s3.meta.client.download_fileobj(
@@ -44,10 +44,10 @@ class AWSProvider(Provider):
         pbar = Progress(size=getsize(file_path), key=key)
 
         # Upload to bucket
-        self.s3.meta.client.download_file(
+        self.s3.meta.client.upload_file(
             Bucket=self.bucket,
             Key=key,
-            FileName=file_path,
+            Filename=str(file_path),
             Callback=pbar,
             ExtraArgs={"Metadata": {"md5": self.md5(file_path=file_path)}},
         )
@@ -57,7 +57,7 @@ class AWSProvider(Provider):
 
     @property
     def keys(self):
-        return [file.key for file in self.s3.Bucket(self.bucket)]
+        return [file.key for file in self.s3.Bucket(self.bucket).objects.all()]
 
     def file_size(self, key: str):
         return self.s3.Bucket(self.bucket).Object(key).content_length
@@ -69,6 +69,6 @@ class AWSProvider(Provider):
         local_md5 = self.md5(file_path=file_path)
         # get remote etag
         msg = f"{key} is not available on `{self.bucket}` S3 bucket."
-        assert key in self.files
+        assert key in self.keys, msg
         remote_md5 = self.s3.Bucket(self.bucket).Object(key).metadata["md5"]
         return local_md5 == remote_md5
