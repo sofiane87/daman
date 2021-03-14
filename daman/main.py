@@ -8,9 +8,9 @@ from os.path import getsize
 from datetime import datetime
 from logging import getLogger
 
-from data_manager import CONFIG, DATA_FOLDER, DataRegistery
-from data_manager.utils import dir_size
-from data_manager.services import current_service
+from daman import CONFIG, DATA_FOLDER, DataRegistery
+from daman.utils import dir_size
+from daman.services import current_service
 
 logger = getLogger(__name__)
 

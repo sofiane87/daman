@@ -1,6 +1,6 @@
-from data_manager import CONFIG
-from data_manager.services.base import Provider, Progress
-from data_manager.services.aws import AWSProvider
+from daman import CONFIG
+from daman.services.base import Provider, Progress
+from daman.services.aws import AWSProvider
 
 PROVIDERS = {"aws": AWSProvider}
 

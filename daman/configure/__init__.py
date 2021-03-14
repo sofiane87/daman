@@ -3,12 +3,12 @@ from pathlib import Path
 from logging import getLogger
 from configparser import ConfigParser
 
-from data_manager.configure.aws import configure_aws
+from daman.configure.aws import configure_aws
 
 
 logger = getLogger(__name__)
 HOME_DIR = Path().home()
-CONFIG_DIR = HOME_DIR / ".data_manager"
+CONFIG_DIR = HOME_DIR / ".daman"
 
 CLOUD_SERVICES = {"aws": configure_aws}
 

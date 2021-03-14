@@ -4,8 +4,8 @@ from warnings import warn
 from os.path import getsize
 from typing import Union, IO, AnyStr
 
-from data_manager import CONFIG
-from data_manager.services import Provider, Progress
+from daman import CONFIG
+from daman.services import Provider, Progress
 
 
 class AWSProvider(Provider):

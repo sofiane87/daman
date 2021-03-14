@@ -1,7 +1,7 @@
 from pathlib import Path
 from configparser import ConfigParser
 
-from data_manager.configure import CONFIG_DIR
+from daman.configure import CONFIG_DIR
 
 
 CONFIG = ConfigParser()

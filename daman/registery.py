@@ -1,6 +1,6 @@
 import orjson
 
-from data_manager import CONFIG_DIR
+from daman import CONFIG_DIR
 
 
 class DataRegistery:
