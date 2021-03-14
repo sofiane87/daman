@@ -35,7 +35,18 @@ class DataRegistery:
 
         self.write(registery)
 
+    @property
+    def keys(self):
+        return list(self.read().keys())
+
+    @property
+    def values(self):
+        return list(self.read().values())
+
+    @property
+    def items(self):
+        return list(self.read().items())
+
     def __contains__(self, item):
         registery = self.read()
-
         return item in registery

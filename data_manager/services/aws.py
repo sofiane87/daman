@@ -1,6 +1,7 @@
 import boto3
-import hashlib
+from pathlib import Path
 from os.path import getsize
+from typing import Union, IO, AnyStr
 
 from data_manager import CONFIG
 from data_manager.services import Provider, Progress
@@ -11,8 +12,9 @@ class AWSProvider(Provider):
         self.bucket = CONFIG["service"]["name"]
         self.s3 = boto3.resource("s3")
 
-    @classmethod
-    def download(self, key, store_path):
+    def download(
+        self, key: str, file_path: Union[str, Path] = None, buffer: IO[AnyStr] = None
+    ):
         # Checking file exists
         msg = f"{key} does not exist in `{self.bucket}` S3 bucket."
         assert key in self.files, msg
@@ -21,15 +23,21 @@ class AWSProvider(Provider):
         pbar = Progress(size=self.file_size(key), key=key)
 
         # Download
-        self.s3.meta.client.download_file(
-            Bucket=self.bucket, Key=key, FileName=store_path, Callback=pbar,
-        )
+        if file_path is not None:
+            self.s3.meta.client.download_file(
+                Bucket=self.bucket, Key=key, FileName=file_path, Callback=pbar,
+            )
+        elif buffer is not None:
+            self.s3.meta.client.download_fileobj(
+                Bucket=self.bucket, Key=key, Fileobj=buffer, Callback=pbar,
+            )
+        else:
+            raise ValueError("`buffer` or `file_path` cannot be `None` simultaneously.")
 
         # close progress bar
         del pbar
 
-    @classmethod
-    def upload(self, key, file_path):
+    def upload(self, key: str, file_path: Union[str, Path]):
         msg = f"{file_path} does not exist."
         assert file_path.exists(), msg
         # Initialising progress bar
@@ -41,26 +49,24 @@ class AWSProvider(Provider):
             Key=key,
             FileName=file_path,
             Callback=pbar,
-            ExtraArgs={"Metadata": {"md5": hashlib.md5(file_path).hexdigest()}},
+            ExtraArgs={"Metadata": {"md5": self.md5(file_path=file_path)}},
         )
 
         # close progres bar
         del pbar
 
-    @classmethod
-    def list_files(self):
+    @property
+    def keys(self):
         return [file.key for file in self.s3.Bucket(self.bucket)]
 
-    @classmethod
-    def file_size(self, key):
+    def file_size(self, key: str):
         return self.s3.Bucket(self.bucket).Object(key).content_length
 
-    @classmethod
-    def check_valid(self, key, file_path):
+    def check_valid(self, key: str, file_path: Union[str, Path]):
         # get local etag
         msg = f"{file_path} does not exist."
         assert file_path.exists(), msg
-        local_md5 = hashlib.md5(file_path).hexdigest()
+        local_md5 = self.md5(file_path=file_path)
         # get remote etag
         msg = f"{key} is not available on `{self.bucket}` S3 bucket."
         assert key in self.files

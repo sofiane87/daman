@@ -6,7 +6,7 @@ PROVIDERS = {"aws": AWSProvider}
 
 
 @property
-def service():
+def current_service():
     req_service = CONFIG["service"]["service"]
     if req_service in PROVIDERS:
         return PROVIDERS[req_service]()
