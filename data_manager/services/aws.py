@@ -36,7 +36,7 @@ class AWSProvider(Provider):
             raise ValueError("`buffer` or `file_path` cannot be `None` simultaneously.")
 
         # close progress bar
-        del pbar
+        pbar.close()
 
     def upload(self, key: str, file_path: Union[str, Path]):
         msg = f"{file_path} does not exist."
@@ -54,7 +54,7 @@ class AWSProvider(Provider):
         )
 
         # close progres bar
-        del pbar
+        pbar.close()
 
     def delete(self, key: str):
         self.s3.meta.client.delete_object(Bucket=self.bucket, Key=key)

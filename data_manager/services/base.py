@@ -50,10 +50,17 @@ class Provider:
 
 class Progress:
     def __init__(self, size: int, key: str):
-        self.progress_bar = tqdm(desc=f"Downloading {key}", total=size)
+        self.size = size
+        self.progress = 0
+        self.progress_bar = tqdm(desc=f"Downloading {key}", total=size, leave=False)
 
     def __call__(self, bytes: int):
+        self.progress += bytes
         self.progress_bar.update(bytes)
+
+    def close(self):
+        self.progress_bar.update(self.size - self.progress)
+        self.progress_bar.close()
 
     def __exit__(self):
         self.progress_bar.close()
