@@ -19,4 +19,4 @@ def download_command():
     )
     args = parser.parse_args()
 
-    dm.pull(key=args.key, local=True, force=args.force, persist=args.persist)
+    dm.pull(key=args.key, force=args.force, persist=args.persist)

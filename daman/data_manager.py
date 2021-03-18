@@ -1,9 +1,9 @@
 import os
 import joblib
 import psutil
+from logging import getLogger
 from io import BytesIO
 from pathlib import Path
-from warnings import warn
 from os.path import getsize
 from datetime import datetime
 
@@ -13,6 +13,9 @@ from configparser import ConfigParser
 from daman.configure import CONFIG_DIR
 from daman.services import PROVIDERS
 from daman.data import DataRegistery
+
+
+logger = getLogger(__name__)
 
 
 class DataManager:
@@ -61,10 +64,11 @@ class DataManager:
             file_path = Path(self.registery[key]["path"])
             is_valid = self.service.check_valid(key=key, file_path=file_path)
             if is_valid:
+                logger.info(f"data `{key}` available locally.")
                 obj = joblib.load(file_path)
                 return obj["data"], obj["meta"]
             else:
-                warn(
+                logger.warning(
                     f"local '{key}' file doesn't match remote. Data will be downloaded again."
                 )
 
@@ -78,6 +82,7 @@ class DataManager:
             obj = joblib.load(buffer)
             return obj["data"], obj["meta"]
         else:
+            logger.info(f"downloading `{key}` file.")
             self.clear_disc(key=key)
             file_path = (Path(self.data_folder) / key).resolve()
             self.service.download(key=key, file_path=file_path)
@@ -103,17 +108,19 @@ class DataManager:
         obj = {"data": obj, "meta": meta}
         if key in self.service.keys:
             if force:
-                warn(f"`{key}` already in use and will be over-written.")
+                logger.warning(f"`{key}` already in use and will be over-written.")
             else:
-                raise KeyError(
-                    f"`{key}` already in use. Please choose a different key or use --force to enforce key override."
-                )
+                err_msg = f"`{key}` already in use. Please choose a different key or use --force to enforce key override."
+                logger.error(err_msg)
+                raise KeyError(err_msg)
 
+        logger.info(f"storing `{key}` data locally.")
         # store locally
         file_path = (Path(self.data_folder) / key).resolve()
         # store locally
         joblib.dump(obj, file_path)
 
+        logger.info(f"uploading {key} to cloud service.")
         # upload to cloud
         self.service.upload(key=key, file_path=file_path)
 
@@ -129,12 +136,14 @@ class DataManager:
 
     def delete(self, key: str, local: bool = True, remote: bool = False):
         if local:
+            logger.info(f"deleting `{key}` data locally.")
             item = self.registery[key]
             # delete file
             del self.registery[key]
             # delete local file
             os.remove(item["path"])
         if remote:
+            logger.info(f"deleting `{key}` data on cloud service.")
             # delete remote file
             self.service.delete(key=key)
 
@@ -173,6 +182,9 @@ class DataManager:
             file_size = space
 
         while self.available_disc() < file_size:
+            logger.info(
+                f"deleting `{file_size - self.available_disc()}` data on cloud service."
+            )
             items = sorted(
                 self.registery.items,
                 key=lambda x: (x[1]["persist"], x[1]["last_used"], x[1]["used"]),
@@ -181,7 +193,7 @@ class DataManager:
             if len(items) > 0:
                 del_key, del_item = items[0]
                 if not del_item["persist"] or ignore_persist:
-                    self.delete(key=del_key)
+                    self.delete(key=del_key, local=True, remote=False)
                     continue
 
             raise IOError(
