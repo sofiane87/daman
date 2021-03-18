@@ -2,6 +2,8 @@
 
 ## description
 
+`daman` aims at providing a relatively simple solution to the challenge of sharing data between various multiple individuals/machines in the context of a python-development workflow. This solution relies on cloud storage and allows to control the amount of local disc space used for data management.
+
 ## setup & configure
 
 ### Install
