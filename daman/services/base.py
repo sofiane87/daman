@@ -7,6 +7,10 @@ from abc import abstractmethod, abstractproperty
 
 class Provider:
     @abstractmethod
+    def __init__(self, config):
+        raise NotImplementedError
+
+    @abstractmethod
     def download(
         self, key: str, file_path: Union[str, Path] = None, buffer: IO[AnyStr] = None
     ):

@@ -4,13 +4,12 @@ from warnings import warn
 from os.path import getsize
 from typing import Union, IO, AnyStr
 
-from daman import CONFIG
 from daman.services import Provider, Progress
 
 
 class AWSProvider(Provider):
-    def __init__(self):
-        self.bucket = CONFIG["service"]["name"]
+    def __init__(self, config):
+        self.bucket = config["service"]["name"]
         self.s3 = boto3.resource("s3")
 
     def download(
@@ -77,5 +76,5 @@ class AWSProvider(Provider):
             remote_md5 = self.s3.Bucket(self.bucket).Object(key).metadata["md5"]
             return local_md5 == remote_md5
         else:
-            warn(f"key `{key}` is not available on `{self.bucket}` S3 bucket.")
+            warn(msg)
             return True

@@ -1,9 +1,4 @@
-from daman.config import CONFIG_DIR, DATA_FOLDER, CONFIG
-from daman.registery import DataRegistery
-from daman.main import (
-    pull,
-    push,
-    delete,
-    list_data,
-    clear_disc,
-)
+from daman.configure import HOME_DIR, CONFIG_DIR, CLOUD_SERVICES
+from daman.data_manager import DataManager
+
+daman = DataManager()
