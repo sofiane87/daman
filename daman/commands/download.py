@@ -3,9 +3,9 @@ from daman import daman as dm
 
 
 def download_command():
-    parser = argparse.ArgumentParser(description="Sets up daman package.")
+    parser = argparse.ArgumentParser(description="Downloads file")
     parser.add_argument(
-        "--key", type=str, help="key of the file to delete", required=True, choices=[]
+        "--key", type=str, help="key of the file to delete", required=True
     )
     parser.add_argument(
         "--force",
