@@ -6,7 +6,7 @@ from daman.services import PROVIDERS
 from daman.configure import configure
 
 
-def configure_command(parser):
+def configure_command():
     parser = argparse.ArgumentParser(description="Sets up daman package.")
     parser.add_argument(
         "--storage_name",

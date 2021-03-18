@@ -2,7 +2,7 @@ import argparse
 from daman import daman as dm
 
 
-def download_command(parser):
+def download_command():
     parser = argparse.ArgumentParser(description="Sets up daman package.")
     parser.add_argument(
         "--key", type=str, help="key of the file to delete", required=True, choices=[]

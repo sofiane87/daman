@@ -3,7 +3,7 @@ import argparse
 from daman.configure import configure_aws
 
 
-def configure_aws_command(parser):
+def configure_aws_command():
     parser = argparse.ArgumentParser(description="Sets up daman package.")
     parser.add_argument(
         "--access_key_id", type=str, help="AWS access_key_id", required=True,
