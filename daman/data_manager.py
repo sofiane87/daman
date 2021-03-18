@@ -47,13 +47,13 @@ class DataManager:
     def pull(
         self,
         key: str,
-        force_download: bool = False,
+        force: bool = False,
         persist: bool = None,
         memory_only: bool = False,
     ):
         msg = f"key '{key}' not found"
         assert key in self.service.keys, msg
-        if key in self.registery:
+        if key in self.registery and not force:
             if persist is not None:
                 self.registery[key]["persist"] = persist
             self.registery[key]["used"] += 1

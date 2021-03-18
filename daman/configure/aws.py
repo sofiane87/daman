@@ -55,7 +55,7 @@ def configure_aws(
 
         set_value(aws_config, "region", region)
 
-        with (AWS_DIR / "region").open("w") as fw:
+        with (AWS_DIR / "config").open("w") as fw:
             aws_config.write(fw)
 
 

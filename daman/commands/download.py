@@ -10,7 +10,7 @@ def download_command():
     parser.add_argument(
         "--force",
         action="store_true",
-        help="When provided forces the download even if the file is already available.",
+        help="When provided forces the download even when the file is already available.",
     )
     parser.add_argument(
         "--persist",
@@ -19,4 +19,4 @@ def download_command():
     )
     args = parser.parse_args()
 
-    dm.pull(key=args.key, local=True, force_download=args.force, persist=args.persist)
+    dm.pull(key=args.key, local=True, force=args.force, persist=args.persist)

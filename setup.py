@@ -16,7 +16,7 @@ setup(
     zip_safe=False,
     entry_points={
         "console_scripts": [
-            "dm_configure = daman.commands:delete_command",
+            "dm_configure = daman.commands:configure_command",
             "dm_aws = daman.commands:configure_aws_command",
             "dm_pull = daman.commands:download_command",
             "dm_delete = daman.commands:delete_command",

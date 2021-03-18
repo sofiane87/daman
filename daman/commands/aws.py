@@ -12,7 +12,7 @@ def configure_aws_command():
         "--secret_access_key", type=str, help="AWS secret_access_key", required=True,
     )
     parser.add_argument(
-        "--region", type=str, help="AWS region", required=True,
+        "--region", type=str, help="AWS region", required=False,
     )
     args = parser.parse_args()
 
