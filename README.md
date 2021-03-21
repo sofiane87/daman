@@ -62,6 +62,7 @@ dm.push(
     obj,
     key=key,
     meta=None,
+    local=True,
     force=False,
     persist=False)
 ```
@@ -72,6 +73,7 @@ dm.push(
 * `obj`: `object` - Any pickle serialisable object.
 * `key`: `str` - name under which to store the object. will be used to retrieve the object.
 * `meta` **[OPTIONAL]**: `object` - Any pickle serialisable meta information to store with the object.
+* `local` **[OPTIONAL]**: `bool` - If set to `True` also adds the uploaded data to your local registery.
 * `force` **[OPTIONAL]**: `bool` - If `key` is already in use, `force` must be set to `True` in order to force the overwriting of the already stored object.
 * `persist` **[OPTIONAL]**: `bool` - If set to `True` ensures the file will not be deleted unless manually requested.
 

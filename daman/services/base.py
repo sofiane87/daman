@@ -49,6 +49,10 @@ class Provider:
 
         content = buffer.read()
         md5_hash.update(content)
+        buffer.seek(0)
+
+        if file_path is not None:
+            buffer.close()
         return md5_hash.hexdigest()
 
 

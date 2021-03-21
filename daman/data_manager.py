@@ -77,10 +77,11 @@ class DataManager:
             persist = False
 
         if memory_only:
-            buffer = BytesIO()
-            self.service.download(key=key, buffer=buffer)
-            obj = joblib.load(buffer)
-            return obj["data"], obj["meta"]
+            with BytesIO() as buffer:
+                buffer.seek(0)
+                self.service.download(key=key, buffer=buffer)
+                obj = joblib.load(buffer)
+                return obj["data"], obj["meta"]
         else:
             logger.info(f"downloading `{key}` file.")
             self.clear_disc(key=key)
@@ -102,6 +103,7 @@ class DataManager:
         obj: object,
         key: str,
         meta: object = None,
+        local: bool = True,
         force: bool = False,
         persist: bool = False,
     ):
@@ -114,25 +116,38 @@ class DataManager:
                 logger.error(err_msg)
                 raise KeyError(err_msg)
 
-        logger.info(f"storing `{key}` data locally.")
-        # store locally
-        file_path = (Path(self.data_folder) / key).resolve()
-        # store locally
-        joblib.dump(obj, file_path)
+        with BytesIO() as file_buffer:
+            joblib.dump(obj, file_buffer)
+            # reset buffer pointer
+            file_buffer.seek(0)
 
-        logger.info(f"uploading {key} to cloud service.")
-        # upload to cloud
-        self.service.upload(key=key, file_path=file_path)
+            if local:
+                logger.info(f"ensuring disc space available")
+                self.clear_disc(space=file_buffer.getbuffer().nbytes / 2 ** 20)
 
-        # update registery
-        self.registery[key] = {
-            "path": str(file_path),
-            "used": 1,
-            "created_at": datetime.now(),
-            "last_used": datetime.now(),
-            "size": getsize(str(file_path)),
-            "persist": persist,
-        }
+                logger.info(f"storing `{key}` data locally.")
+                # store locally
+                file_path = (Path(self.data_folder) / key).resolve()
+                with file_path.open("wb") as fw:
+                    fw.write(file_buffer.read())
+
+                logger.info(f"uploading {key} to cloud service.")
+                # upload to cloud
+                self.service.upload(key=key, file_path=file_path)
+
+                # update registery
+                self.registery[key] = {
+                    "path": str(file_path),
+                    "used": 1,
+                    "created_at": datetime.now(),
+                    "last_used": datetime.now(),
+                    "size": getsize(str(file_path)),
+                    "persist": persist,
+                }
+            else:
+                logger.info(f"uploading {key} to cloud service.")
+                # upload to cloud
+                self.service.upload(key=key, buffer=file_buffer)
 
     def delete(self, key: str, local: bool = True, remote: bool = False):
         if local:
@@ -152,7 +167,7 @@ class DataManager:
             {
                 "key": key,
                 "local": key in self.registery,
-                "size": self.service.file_size(key) // 2 ** 20,
+                "size": self.service.file_size(key) / 2 ** 20,
                 "remote": key in self.service.keys,
             }
             for key in (
@@ -165,7 +180,7 @@ class DataManager:
     def available_disc(self):
         if self.config["local"]["allocated_space"] is None:
             free_space = (
-                psutil.disk_usage(self.data_folder).free() // 2 ** 20
+                psutil.disk_usage(self.data_folder).free() / 2 ** 20
             )  # disc space in megabytes
         else:
             free_space = int(self.config["local"]["allocated_space"]) - dir_size(
@@ -177,7 +192,7 @@ class DataManager:
         self, key: str = None, space: int = None, ignore_persist: bool = False
     ):
         if key is not None:
-            file_size = self.service.file_size(key=key) // 2 ** 20
+            file_size = self.service.file_size(key=key) / 2 ** 20
         else:
             file_size = space
 
