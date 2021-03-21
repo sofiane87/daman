@@ -3,3 +3,4 @@ orjson==3.5.1
 orjson==3.5.1
 psutil==5.8.0
 tqdm==4.59.0
+pandas==1.2.3

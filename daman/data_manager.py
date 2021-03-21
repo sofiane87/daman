@@ -1,8 +1,9 @@
 import os
 import joblib
 import psutil
-from logging import getLogger
+import pandas as pd
 from io import BytesIO
+from logging import getLogger
 from pathlib import Path
 from os.path import getsize
 from datetime import datetime
@@ -85,7 +86,7 @@ class DataManager:
         else:
             logger.info(f"downloading `{key}` file.")
             self.clear_disc(key=key)
-            file_path = (Path(self.data_folder) / key).resolve()
+            file_path = (self.data_folder / key).resolve()
             self.service.download(key=key, file_path=file_path)
             self.registery[key] = {
                 "path": str(file_path),
@@ -127,7 +128,7 @@ class DataManager:
 
                 logger.info(f"storing `{key}` data locally.")
                 # store locally
-                file_path = (Path(self.data_folder) / key).resolve()
+                file_path = (self.data_folder / key).resolve()
                 with file_path.open("wb") as fw:
                     fw.write(file_buffer.read())
 
@@ -162,20 +163,28 @@ class DataManager:
             # delete remote file
             self.service.delete(key=key)
 
-    def list_data(self, local_only: bool = False):
-        return [
-            {
-                "key": key,
-                "local": key in self.registery,
-                "size": self.service.file_size(key) / 2 ** 20,
-                "remote": key in self.service.keys,
-            }
-            for key in (
-                self.registery.keys
-                if local_only
-                else set(self.service.keys) | set(self.registery.keys)
-            )
-        ]
+    @property
+    def summary(self):
+        service_keys = list(self.service.keys)
+        return pd.DataFrame(
+            [
+                {
+                    "key": key,
+                    "local": key in self.registery,
+                    "remote": key in service_keys,
+                    "size (MB)": round(
+                        (
+                            self.registery[key]["size"]
+                            if key in self.registery.keys
+                            else self.service.file_size(key)
+                        )
+                        / 2 ** 20,
+                        2,
+                    ),
+                }
+                for key in (set(self.service.keys) | set(self.registery.keys))
+            ]
+        )
 
     def available_disc(self):
         if self.config["local"]["allocated_space"] is None:

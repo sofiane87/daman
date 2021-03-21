@@ -19,7 +19,7 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/sofiane87/daman",
     python_requires=">=3.6.0",
-    version="0.1.6",
+    version="0.1.7",
     packages=find_packages("."),
     package_dir={"": "."},
     include_package_data=True,
@@ -31,6 +31,7 @@ setup(
             "dm_pull = daman.commands:download_command",
             "dm_delete = daman.commands:delete_command",
             "dm_clear = daman.commands:clear_command",
+            "dm_summary = daman.commands:summary_command",
         ]
     },
     project_urls={"Bug Tracker": "https://github.com/sofiane87/daman/issues",},
