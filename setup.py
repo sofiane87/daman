@@ -19,7 +19,7 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/sofiane87/daman",
     python_requires=">=3.6.0",
-    version="0.1.5",
+    version="0.1.6",
     packages=find_packages("."),
     package_dir={"": "."},
     include_package_data=True,
