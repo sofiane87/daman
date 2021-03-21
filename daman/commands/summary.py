@@ -1,4 +1,3 @@
-import pandas as pd
 from daman import daman as dm
 
 
