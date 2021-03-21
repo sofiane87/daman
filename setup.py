@@ -34,7 +34,7 @@ setup(
             "dm_summary = daman.commands:summary_command",
         ]
     },
-    project_urls={"Bug Tracker": "https://github.com/sofiane87/daman/issues",},
+    project_urls={"Bug Tracker": "https://github.com/sofiane87/daman/issues"},
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
