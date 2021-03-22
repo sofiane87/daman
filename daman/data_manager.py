@@ -64,14 +64,13 @@ class DataManager:
             self.registery[key]["last_used"] = datetime.now()
             file_path = Path(self.registery[key]["path"])
             is_valid = self.service.check_valid(key=key, file_path=file_path)
-            if is_valid:
-                logger.info(f"data `{key}` available locally.")
-                obj = joblib.load(file_path)
-                return obj["data"], obj["meta"]
-            else:
+            if not is_valid:
                 logger.warning(
-                    f"local '{key}' file doesn't match remote. Data will be downloaded again."
+                    f"local '{key}' file doesn't match remote version. Please pull it again using `force`."
                 )
+            logger.info(f"data `{key}` available locally.")
+            obj = joblib.load(file_path)
+            return obj["data"], obj["meta"]
 
         # download file
         if persist is None:
