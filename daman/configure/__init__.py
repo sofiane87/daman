@@ -51,8 +51,10 @@ def configure(
     dm_config["local"] = {
         "data_dir": str(Path(local_dir).resolve()),
         "registery": str(CONFIG_DIR / "registery.json"),
-        "allocated_space": allocated_space,
     }
+
+    if allocated_space is not None:
+        dm_config["local"]["allocated_space"] = allocated_space
 
     CONFIG_DIR.mkdir(parents=True, exist_ok=True)
     with (CONFIG_DIR / "config").open("w") as fw:
