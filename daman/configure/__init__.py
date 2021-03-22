@@ -54,7 +54,7 @@ def configure(
     }
 
     if allocated_space is not None:
-        dm_config["local"]["allocated_space"] = allocated_space
+        dm_config["local"]["allocated_space"] = str(allocated_space)
 
     CONFIG_DIR.mkdir(parents=True, exist_ok=True)
     with (CONFIG_DIR / "config").open("w") as fw:
